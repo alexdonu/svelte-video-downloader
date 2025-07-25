@@ -9,7 +9,7 @@ const socketIo = require("socket.io");
 const server = http.createServer(app);
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:5173", // SvelteKit dev server
+    origin: ["http://localhost:5173", "http://192.168.100.37:5173"], // Allow both localhost and network access
     methods: ["GET", "POST", "DELETE"],
   },
 });
@@ -27,7 +27,13 @@ app.use(express.json());
 
 // CORS middleware for SvelteKit
 app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "http://localhost:5173");
+  const allowedOrigins = ["http://localhost:5173", "http://192.168.100.37:5173"];
+  const origin = req.headers.origin;
+  
+  if (allowedOrigins.includes(origin)) {
+    res.header("Access-Control-Allow-Origin", origin);
+  }
+  
   res.header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
   res.header("Access-Control-Allow-Headers", "Content-Type");
 
@@ -407,8 +413,9 @@ io.on("connection", (socket) => {
 });
 
 // Start server
-server.listen(PORT, () => {
-  console.log(`🚀 Video Downloader API running at http://localhost:${PORT}`);
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 Video Downloader API running at http://0.0.0.0:${PORT}`);
+  console.log(`🌐 Access from other devices: http://192.168.100.37:${PORT}`);
   console.log("📁 Downloads will be saved to:", DOWNLOADS_DIR);
-  console.log("🌐 CORS enabled for: http://localhost:5173");
+  console.log("🌐 CORS enabled for network access");
 });

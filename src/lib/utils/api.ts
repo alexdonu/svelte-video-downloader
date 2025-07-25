@@ -6,12 +6,24 @@ import {
 } from "$lib/stores/downloads";
 import type { DownloadFile, VideoInfo } from "$lib/stores/downloads";
 
-const API_BASE = "http://localhost:3000/api";
+// Dynamic API base - works for both localhost and network access
+const getApiBase = () => {
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+  return `${protocol}//${hostname}:3000/api`;
+};
+
+const getSocketUrl = () => {
+  const protocol = window.location.protocol;
+  const hostname = window.location.hostname;
+  return `${protocol}//${hostname}:3000`;
+};
+
 let socket: Socket | null = null;
 
 // Connect to Socket.IO
 export function connectSocket(): void {
-  socket = io("http://localhost:3000");
+  socket = io(getSocketUrl());
 
   socket.on("download-progress", (data: any) => {
     if (data.status === "downloading") {
@@ -53,7 +65,7 @@ export function connectSocket(): void {
 
 // Get video info
 export async function getVideoInfo(url: string): Promise<VideoInfo> {
-  const response = await fetch(`${API_BASE}/info`, {
+  const response = await fetch(`${getApiBase()}/info`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ url }),
@@ -71,7 +83,7 @@ export async function getVideoInfo(url: string): Promise<VideoInfo> {
 export async function downloadVideo(
   url: string
 ): Promise<{ downloadId: string; status: string }> {
-  const response = await fetch(`${API_BASE}/download`, {
+  const response = await fetch(`${getApiBase()}/download`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ url }),
@@ -88,7 +100,7 @@ export async function downloadVideo(
 // Load downloads list
 export async function loadDownloads(): Promise<void> {
   try {
-    const response = await fetch(`${API_BASE}/downloads`);
+    const response = await fetch(`${getApiBase()}/downloads`);
 
     if (!response.ok) {
       throw new Error("Failed to load downloads");
@@ -111,7 +123,7 @@ export async function loadDownloads(): Promise<void> {
 export async function openInFolder(
   filename: string
 ): Promise<{ success: boolean; message: string }> {
-  const response = await fetch(`${API_BASE}/open-folder`, {
+  const response = await fetch(`${getApiBase()}/open-folder`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ filename }),
@@ -129,7 +141,7 @@ export async function openInFolder(
 export async function deleteFile(
   filename: string
 ): Promise<{ success: boolean; message: string }> {
-  const response = await fetch(`${API_BASE}/delete-file`, {
+  const response = await fetch(`${getApiBase()}/delete-file`, {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ filename }),
