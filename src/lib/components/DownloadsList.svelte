@@ -6,11 +6,6 @@
 
   onMount(() => {
     loadDownloads();
-
-    // Auto-refresh downloads every 30 seconds
-    const interval = setInterval(loadDownloads, 30000);
-
-    return () => clearInterval(interval);
   });
 </script>
 
