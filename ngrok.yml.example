@@ -1,0 +1,15 @@
+version: "2"
+# Copy this file to ngrok.yml and add your auth token
+# Get your auth token from: https://dashboard.ngrok.com/get-started/your-authtoken
+
+tunnels:
+  frontend:
+    addr: 5173
+    proto: http
+    # Remove subdomain line for free accounts or add your custom subdomain
+    # subdomain: your-app-name-frontend
+  backend:
+    addr: 3000
+    proto: http
+    # Remove subdomain line for free accounts or add your custom subdomain
+    # subdomain: your-app-name-backend

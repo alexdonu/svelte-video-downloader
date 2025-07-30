@@ -30,3 +30,6 @@ backend/downloads/*
 # yt-dlp binary
 backend/yt-dlp
 backend/yt-dlp.exe
+
+# ngrok config (contains auth token)
+ngrok.yml

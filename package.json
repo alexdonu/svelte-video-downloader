@@ -12,7 +12,9 @@
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"backend": "cd backend && npm start",
 		"backend:dev": "cd backend && npm run dev",
-		"start:all": "concurrently \"npm run backend\" \"npm run dev\""
+		"start:all": "concurrently \"npm run backend\" \"npm run dev\"",
+		"ngrok": "ngrok start --all --config ngrok.yml",
+		"start:public": "concurrently \"npm run backend:dev\" \"npm run dev\" \"npm run ngrok\""
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-auto": "^6.0.0",
