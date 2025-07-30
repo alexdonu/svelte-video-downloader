@@ -1,15 +1,38 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import VideoForm from "$lib/components/VideoForm.svelte";
-  import VideoInfo from "$lib/components/VideoInfo.svelte";
-  import ProgressBar from "$lib/components/ProgressBar.svelte";
   import DownloadsList from "$lib/components/DownloadsList.svelte";
+  import DownloadQueue from "$lib/components/DownloadQueue.svelte";
   import StatusMessage from "$lib/components/StatusMessage.svelte";
-  import { connectSocket } from "$lib/utils/api";
+  import CompletionToast from "$lib/components/CompletionToast.svelte";
+  import { connectSocket, loadQueueStatus } from "$lib/utils/api";
+
+  // Toast state
+  let showToast = false;
+  let toastDownloadId = "";
+  let toastTitle = "";
+  let toastMessage = "";
 
   onMount(() => {
     // Connect to Socket.IO for real-time updates
     connectSocket();
+    // Load initial queue status
+    loadQueueStatus();
+
+    // Listen for download completion events
+    function handleDownloadCompleted(event: CustomEvent) {
+      const { downloadId, title, message } = event.detail;
+      toastDownloadId = downloadId;
+      toastTitle = title;
+      toastMessage = message;
+      showToast = true;
+    }
+
+    window.addEventListener('download-completed', handleDownloadCompleted as EventListener);
+
+    return () => {
+      window.removeEventListener('download-completed', handleDownloadCompleted as EventListener);
+    };
   });
 </script>
 
@@ -31,7 +54,7 @@
     >
       <h1 class="text-4xl font-bold mb-3">🎬 Video Downloader</h1>
       <p class="text-lg opacity-90">
-        Download videos from Dailymotion, YouTube, and more
+        Download videos from YouTube, TikTok and more
       </p>
     </div>
 
@@ -43,14 +66,19 @@
       <!-- Video Form -->
       <VideoForm />
 
-      <!-- Video Info Display -->
-      <VideoInfo />
-
-      <!-- Progress Bar -->
-      <ProgressBar />
+      <!-- Download Queue -->
+      <DownloadQueue />
 
       <!-- Downloads List -->
       <DownloadsList />
     </div>
   </div>
 </div>
+
+<!-- Completion Toast -->
+<CompletionToast 
+  bind:show={showToast}
+  downloadId={toastDownloadId}
+  title={toastTitle}
+  message={toastMessage}
+/>
