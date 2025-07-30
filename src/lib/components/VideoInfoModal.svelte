@@ -2,6 +2,7 @@
   import type { VideoInfo, VideoFormat } from "$lib/stores/downloads";
   import { downloadVideo } from "$lib/utils/api";
   import { statusStore } from "$lib/stores/downloads";
+  import { browser } from "$app/environment";
 
   export let isOpen = false;
   export let videoInfo: VideoInfo | null = null;
@@ -15,6 +16,10 @@
   let isDownloading = false;
 
   function closeModal() {
+    // Restore body scroll before closing
+    if (browser) {
+      document.body.style.overflow = '';
+    }
     onClose();
   }
 
@@ -69,11 +74,28 @@
     }
   }
 
+  // Cleanup on component destroy
+  import { onDestroy } from 'svelte';
+  
+  onDestroy(() => {
+    // Ensure body scroll is restored if component is destroyed while modal is open
+    if (browser) {
+      document.body.style.overflow = '';
+    }
+  });
+
   // Focus trap for accessibility
   let modalElement: HTMLElement;
   
-  $: if (isOpen && modalElement) {
-    modalElement.focus();
+  $: if (browser) {
+    if (isOpen && modalElement) {
+      modalElement.focus();
+      // Prevent body scroll when modal is open
+      document.body.style.overflow = 'hidden';
+    } else {
+      // Restore body scroll when modal is closed
+      document.body.style.overflow = '';
+    }
   }
 </script>
 
@@ -178,41 +200,44 @@
                                  ? 'border-blue-500 bg-blue-50 ring-2 ring-blue-200' 
                                  : 'border-green-200 hover:border-green-300 hover:bg-green-25'}"
                       >
-                        <div class="flex items-center justify-between">
-                          <div class="flex-1">
-                            <div class="flex items-center gap-2 text-sm font-medium text-gray-800">
-                              <span class="text-green-600">{format.format_id}</span>
-                              <span class="text-gray-400">•</span>
-                              <span>{format.ext.toUpperCase()}</span>
-                              <span class="text-gray-400">•</span>
-                              <span>{format.resolution}</span>
-                              {#if format.fps}
-                                <span class="text-gray-400">•</span>
-                                <span>{format.fps}fps</span>
-                              {/if}
-                              {#if selectedFormat?.format_id === format.format_id}
-                                <span class="ml-2 text-blue-600">✓ Selected</span>
-                              {/if}
-                            </div>
-                            {#if format.format_note}
-                              <div class="text-xs text-gray-500 mt-1">{format.format_note}</div>
+                        <div class="space-y-2">
+                          <!-- Main format info - responsive layout -->
+                          <div class="flex items-center flex-wrap gap-1 text-sm font-medium text-gray-800">
+                            <span class="text-green-600 flex-shrink-0">{format.format_id}</span>
+                            <span class="text-gray-400 flex-shrink-0">•</span>
+                            <span class="flex-shrink-0">{format.ext.toUpperCase()}</span>
+                            <span class="text-gray-400 flex-shrink-0">•</span>
+                            <span class="flex-shrink-0">{format.resolution}</span>
+                            {#if format.fps}
+                              <span class="text-gray-400 flex-shrink-0">•</span>
+                              <span class="flex-shrink-0">{format.fps}fps</span>
                             {/if}
-                            {#if format.filesize}
-                              <div class="text-xs text-gray-500 mt-1">
-                                Size: {(format.filesize / 1024 / 1024).toFixed(1)} MB
-                              </div>
+                            {#if selectedFormat?.format_id === format.format_id}
+                              <span class="text-blue-600 flex-shrink-0">✓ Selected</span>
                             {/if}
                           </div>
-                          <div class="text-right text-xs text-gray-500">
-                            {#if format.vcodec && format.vcodec !== 'none'}
-                              <div>Video: {format.vcodec}</div>
-                            {/if}
-                            {#if format.acodec && format.acodec !== 'none'}
-                              <div>Audio: {format.acodec}</div>
-                            {/if}
-                            {#if format.tbr}
-                              <div>{format.tbr}kbps</div>
-                            {/if}
+                          
+                          <!-- Additional info in mobile-friendly layout -->
+                          <div class="flex flex-col sm:flex-row sm:justify-between gap-1 text-xs text-gray-500">
+                            <div class="space-y-1">
+                              {#if format.format_note}
+                                <div class="truncate">{format.format_note}</div>
+                              {/if}
+                              {#if format.filesize}
+                                <div>Size: {(format.filesize / 1024 / 1024).toFixed(1)} MB</div>
+                              {/if}
+                            </div>
+                            <div class="space-y-1 sm:text-right flex-shrink-0">
+                              {#if format.vcodec && format.vcodec !== 'none'}
+                                <div>Video: {format.vcodec}</div>
+                              {/if}
+                              {#if format.acodec && format.acodec !== 'none'}
+                                <div>Audio: {format.acodec}</div>
+                              {/if}
+                              {#if format.tbr}
+                                <div>{format.tbr}kbps</div>
+                              {/if}
+                            </div>
                           </div>
                         </div>
                       </button>
