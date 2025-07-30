@@ -88,9 +88,83 @@ The application uses Svelte stores for state management:
 ## Development Notes
 
 ### Prerequisites
-- Node.js and npm installed
-- `yt-dlp` binary available (either in `backend/` directory or system-wide)
-- The backend expects `yt-dlp` executable in the backend directory or globally installed
+
+#### Cross-Platform Requirements
+- **Node.js** (v16 or higher) and npm installed
+- **yt-dlp** binary available (see installation instructions below)
+
+#### yt-dlp Installation (Cross-Platform)
+
+**Windows:**
+```bash
+# Option 1: Using winget (Windows 10/11)
+winget install yt-dlp
+
+# Option 2: Using chocolatey
+choco install yt-dlp
+
+# Option 3: Manual download
+# Download yt-dlp.exe from https://github.com/yt-dlp/yt-dlp/releases
+# Place it in the backend/ directory or in your PATH
+```
+
+**macOS:**
+```bash
+# Option 1: Using Homebrew (recommended)
+brew install yt-dlp
+
+# Option 2: Using pip
+pip3 install yt-dlp
+
+# Option 3: Using MacPorts
+sudo port install yt-dlp
+```
+
+**Linux (Ubuntu/Debian):**
+```bash
+# Option 1: Using pip (recommended)
+pip3 install yt-dlp
+
+# Option 2: Using apt (if available)
+sudo apt update && sudo apt install yt-dlp
+
+# Option 3: Using snap
+sudo snap install yt-dlp
+```
+
+**Linux (Other Distributions):**
+```bash
+# Fedora/CentOS/RHEL
+sudo dnf install yt-dlp
+
+# Arch Linux
+sudo pacman -S yt-dlp
+
+# Generic (using pip)
+pip3 install yt-dlp
+```
+
+#### File Manager Requirements (Linux Only)
+For the "Open in Folder" feature on Linux, install one of these file managers:
+```bash
+# GNOME
+sudo apt install nautilus
+
+# KDE
+sudo apt install dolphin
+
+# XFCE
+sudo apt install thunar
+
+# LXDE/LXQt
+sudo apt install pcmanfm
+```
+
+#### Verification
+Test that yt-dlp is working:
+```bash
+yt-dlp --version
+```
 
 ### Configuration
 - Frontend runs on `http://localhost:5173` (Vite dev server)
