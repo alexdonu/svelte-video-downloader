@@ -4,13 +4,16 @@ A modern video downloader application built with SvelteKit and Express.js, featu
 
 ## Features
 
-- 🎥 Download videos from multiple platforms (YouTube, etc.)
-- 📱 Responsive design with Tailwind CSS
-- ⚡ Real-time download progress updates
-- 📁 File management (view, delete, open in folder)
-- 🔄 Socket.IO for live progress tracking
-- 📝 TypeScript support throughout
-- 🎨 Modern UI with Svelte 5
+- 🎥 **Multi-platform video downloads** - Support for YouTube and other platforms via yt-dlp
+- 📱 **Responsive design** - Clean, modern interface with Tailwind CSS
+- ⚡ **Real-time progress tracking** - Live download progress with Socket.IO
+- 📋 **Download queue management** - Pause, resume, cancel downloads with concurrent limits
+- 🎬 **Format selection** - Choose video quality and format before downloading
+- 📁 **File management** - View, delete, and open downloaded files in system folder
+- 🔄 **Cross-platform compatibility** - Works on Windows, macOS, and Linux
+- 📝 **TypeScript support** - Full type safety throughout the application
+- 🎨 **Modern UI** - Built with Svelte 5 and responsive design principles
+- 🌐 **Network access** - Support for local network and ngrok tunneling
 
 ## Prerequisites
 
@@ -61,6 +64,14 @@ npm run dev
 npm run backend:dev
 ```
 
+### Key Features in Development
+
+- **Real-time updates**: Changes are reflected immediately via Socket.IO
+- **Download queue**: Manage multiple downloads with configurable concurrent limits
+- **Format selection**: Preview available video formats and select preferred quality
+- **Cross-platform file operations**: Open files in system file manager
+- **Network access**: Access from other devices on your local network
+
 ## Building for Production
 
 Build the frontend:
@@ -99,3 +110,43 @@ npm run backend
 - **Video Processing**: yt-dlp
 - **Real-time Communication**: Socket.IO
 - **Build Tool**: Vite
+- **State Management**: Svelte stores
+- **File System**: Cross-platform file operations
+- **Network**: CORS support for local network access
+
+## API Endpoints
+
+### Video Information
+- `POST /api/info` - Get video metadata and available formats
+- `POST /api/download` - Add video to download queue
+
+### Download Management
+- `GET /api/queue` - Get current download queue status
+- `POST /api/queue/pause/:id` - Pause active download
+- `POST /api/queue/resume/:id` - Resume paused download
+- `POST /api/queue/cancel/:id` - Cancel download
+- `DELETE /api/queue/:id` - Remove from queue and delete files
+- `POST /api/queue/clear-completed` - Clear completed downloads
+- `POST /api/queue/concurrent-limit` - Set max concurrent downloads
+
+### File Operations
+- `GET /api/downloads` - List downloaded files
+- `POST /api/open-folder` - Open file in system file manager
+- `DELETE /api/delete-file` - Delete downloaded file
+
+## Socket.IO Events
+
+### Client Events
+- `download-progress` - Real-time download progress updates
+- `queue-update` - Download queue status changes
+- `downloads-updated` - Downloaded files list updates
+- `file-deleted` - File deletion notifications
+- `status-message` - System status messages
+- `download-completed` - Download completion notifications
+
+### Connection Events
+- `connect` - Connection established
+- `disconnect` - Connection lost
+- `connect_error` - Connection failed
+- `reconnect` - Connection restored
+- `reconnect_error` - Reconnection failed
