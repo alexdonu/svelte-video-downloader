@@ -551,7 +551,116 @@ app.post("/api/info", async (req, res) => {
   }
 });
 
-// Add video to download queue
+// Direct streaming download (new approach)
+app.post("/api/download-stream", async (req, res) => {
+  const { url, format = "best", customFilename } = req.body;
+
+  if (!url) {
+    return res.status(400).json({ error: "URL is required" });
+  }
+
+  try {
+    const ytdlpPath = await checkYtDlp();
+    if (!ytdlpPath) {
+      return res.status(500).json({ error: "yt-dlp not found. Please ensure yt-dlp is installed." });
+    }
+
+    // Get video info first to determine filename
+    const infoProcess = spawn(ytdlpPath, [url, "--dump-json", "--no-download"]);
+    let infoOutput = "";
+    let infoError = "";
+
+    infoProcess.stdout.on("data", (data) => {
+      infoOutput += data.toString();
+    });
+
+    infoProcess.stderr.on("data", (data) => {
+      infoError += data.toString();
+    });
+
+    infoProcess.on("close", (code) => {
+      if (code === 0) {
+        try {
+          const info = JSON.parse(infoOutput);
+          const filename = customFilename 
+            ? `${customFilename}.${info.ext || 'mp4'}`
+            : `${info.title}.${info.ext || 'mp4'}`;
+
+          // Sanitize filename for safe download
+          const safeFilename = filename.replace(/[^a-zA-Z0-9.-]/g, '_');
+
+          // Set headers for file download
+          res.setHeader('Content-Disposition', `attachment; filename="${safeFilename}"`);
+          res.setHeader('Content-Type', 'application/octet-stream');
+          res.setHeader('Transfer-Encoding', 'chunked');
+
+          // Start yt-dlp process and pipe to response
+          const downloadProcess = spawn(ytdlpPath, [
+            url,
+            "-o", "-", // Output to stdout
+            "--format", format,
+          ]);
+
+          let totalBytes = 0;
+          let downloadStartTime = Date.now();
+
+          downloadProcess.stdout.on("data", (chunk) => {
+            totalBytes += chunk.length;
+            res.write(chunk);
+          });
+
+          downloadProcess.stderr.on("data", (data) => {
+            const output = data.toString();
+            // Log progress but don't send to client since we're streaming binary data
+            if (output.includes("[download]")) {
+              console.log("Download progress:", output.trim());
+            }
+          });
+
+          downloadProcess.on("close", (code) => {
+            if (code === 0) {
+              res.end();
+              const downloadTime = (Date.now() - downloadStartTime) / 1000;
+              console.log(`Download completed: ${safeFilename} (${totalBytes} bytes in ${downloadTime}s)`);
+            } else {
+              if (!res.headersSent) {
+                res.status(500).json({ error: `Download failed with code ${code}` });
+              } else {
+                // Headers already sent, can't send JSON error
+                res.end();
+              }
+            }
+          });
+
+          downloadProcess.on("error", (error) => {
+            console.error("Download process error:", error);
+            if (!res.headersSent) {
+              res.status(500).json({ error: `Process error: ${error.message}` });
+            } else {
+              res.end();
+            }
+          });
+
+        } catch (e) {
+          res.status(500).json({ error: "Could not parse video info: " + e.message });
+        }
+      } else {
+        res.status(500).json({
+          error: `Could not get video info. yt-dlp error: ${infoError || "Unknown error"}`
+        });
+      }
+    });
+
+    infoProcess.on("error", (err) => {
+      res.status(500).json({ error: "Failed to start yt-dlp process: " + err.message });
+    });
+
+  } catch (err) {
+    res.status(500).json({ error: "Internal server error: " + err.message });
+  }
+});
+
+// Add video to download queue (legacy approach - keeping for compatibility)
 app.post("/api/download", async (req, res) => {
   const { url, format = "best", customFilename } = req.body;
 

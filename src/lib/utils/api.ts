@@ -175,7 +175,63 @@ export async function getVideoInfo(url: string): Promise<VideoInfo> {
   return response.json();
 }
 
-// Download video
+// Direct streaming download (new approach)
+export async function downloadVideoStream(
+  url: string,
+  customFilename?: string,
+  format?: string
+): Promise<void> {
+  // Check if running in browser
+  if (typeof window === 'undefined') {
+    throw new Error('Streaming downloads only work in browser environment');
+  }
+
+  try {
+    const response = await fetch(`${getApiBase()}/download-stream`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "ngrok-skip-browser-warning": "true"
+      },
+      body: JSON.stringify({ url, customFilename, format }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error || "Failed to start download");
+    }
+
+    // Get filename from response headers
+    const contentDisposition = response.headers.get('content-disposition');
+    let filename = 'download';
+    if (contentDisposition) {
+      const filenameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
+      if (filenameMatch) {
+        filename = filenameMatch[1];
+      }
+    }
+
+    // Read the response as blob and trigger download
+    const blob = await response.blob();
+    const downloadUrl = window.URL.createObjectURL(blob);
+    
+    // Create temporary link and trigger download
+    const link = document.createElement('a');
+    link.href = downloadUrl;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    
+    // Cleanup
+    document.body.removeChild(link);
+    window.URL.revokeObjectURL(downloadUrl);
+
+  } catch (error) {
+    throw error;
+  }
+}
+
+// Download video (legacy queue approach - keeping for compatibility)
 export async function downloadVideo(
   url: string,
   customFilename?: string,

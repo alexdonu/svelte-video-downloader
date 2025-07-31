@@ -2,6 +2,26 @@
 
 A modern video downloader application built with SvelteKit and Express.js, featuring real-time progress updates via Socket.IO. Download videos from various platforms using `yt-dlp` with a clean, responsive interface.
 
+## Download Modes
+
+The application supports two download modes:
+
+### 📋 Queue Mode (Default)
+- Downloads are processed on the server
+- Files are stored in the server's downloads folder
+- Full queue management with pause/resume/cancel
+- Real-time progress tracking via Socket.IO
+- File management UI for server-stored files
+- Ideal for single-user or server owner scenarios
+
+### ⬇️ Direct Download Mode
+- Files stream directly to the requesting device's download folder
+- No server storage required
+- Works across networks (perfect for ngrok/remote access)
+- Downloads appear in browser's default download location
+- Each user gets files on their own device
+- Ideal for multi-user or remote access scenarios
+
 ## Features
 
 - 🎥 **Multi-platform video downloads** - Support for YouTube and other platforms via yt-dlp
@@ -9,7 +29,8 @@ A modern video downloader application built with SvelteKit and Express.js, featu
 - ⚡ **Real-time progress tracking** - Live download progress with Socket.IO
 - 📋 **Download queue management** - Pause, resume, cancel downloads with concurrent limits
 - 🎬 **Format selection** - Choose video quality and format before downloading
-- 📁 **File management** - View, delete, and open downloaded files in system folder
+- ⬇️ **Direct download mode** - Stream files directly to requesting device's download folder
+- 📁 **File management** - View, delete, and open downloaded files in system folder (queue mode)
 - 🔄 **Cross-platform compatibility** - Works on Windows, macOS, and Linux
 - 📝 **TypeScript support** - Full type safety throughout the application
 - 🎨 **Modern UI** - Built with Svelte 5 and responsive design principles
@@ -67,6 +88,7 @@ npm run backend:dev
 ### Key Features in Development
 
 - **Real-time updates**: Changes are reflected immediately via Socket.IO
+- **Download modes**: Choose between queue management or direct device downloads
 - **Download queue**: Manage multiple downloads with configurable concurrent limits
 - **Format selection**: Preview available video formats and select preferred quality
 - **Cross-platform file operations**: Open files in system file manager
@@ -119,6 +141,7 @@ npm run backend
 ### Video Information
 - `POST /api/info` - Get video metadata and available formats
 - `POST /api/download` - Add video to download queue
+- `POST /api/download-stream` - Stream download directly to client device
 
 ### Download Management
 - `GET /api/queue` - Get current download queue status

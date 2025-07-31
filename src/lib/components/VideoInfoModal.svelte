@@ -1,6 +1,6 @@
 <script lang="ts">
   import type { VideoInfo, VideoFormat } from "$lib/stores/downloads";
-  import { downloadVideo } from "$lib/utils/api";
+  import { downloadVideo, downloadVideoStream } from "$lib/utils/api";
   import { statusStore } from "$lib/stores/downloads";
   import { browser } from "$app/environment";
 
